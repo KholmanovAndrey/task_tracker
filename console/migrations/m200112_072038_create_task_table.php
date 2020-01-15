@@ -14,26 +14,38 @@ class m200112_072038_create_task_table extends Migration
     {
         $this->createTable('{{%task}}', [
             'id' => $this->primaryKey(),
-            'user_id' => $this->integer(),
+            'creator_id' => $this->integer(),
+            'executor_id' => $this->integer(),
             'name' => $this->string(255)->notNull(),
-            'started_at' => $this->timestamp()->defaultExpression("now()"),
-            'finished_at' => $this->timestamp()->defaultExpression("now()"),
-            'created_at' => $this->timestamp()->defaultExpression("now()"),
-            'updated_at' => $this->timestamp()->defaultExpression("now()"),
             'content' => $this->text(),
-            'cycle' => $this->boolean()->defaultValue(false),
-            'main' => $this->boolean()->defaultValue(false),
+            'status' => $this->tinyInteger(),
+            'started_at' => $this->bigInteger(),
+            'finished_at' => $this->bigInteger(),
+            'created_at' => $this->bigInteger(),
+            'updated_at' => $this->bigInteger(),
         ]);
 
-        $this->createIndex('task_user_index', '{{%task}}', 'user_id');
+        $this->createIndex('task_creator_index', '{{%task}}', 'creator_id');
+        $this->createIndex('task_executor_index', '{{%task}}', 'executor_id');
         $this->createIndex('task_at_index', '{{%task}}', ['created_at', 'started_at']);
 
         $this->addForeignKey(
-            'task_user_foreign_key',
+            'task_creator_id_foreign_key',
             '{{%task}}',
-            'user_id',
+            'creator_id',
             '{{%user}}',
-            'id');
+            'id',
+            'CASCADE'
+        );
+
+        $this->addForeignKey(
+            'task_executor_id_foreign_key',
+            '{{%task}}',
+            'executor_id',
+            '{{%user}}',
+            'id',
+            'CASCADE'
+        );
     }
 
     /**
@@ -41,7 +53,6 @@ class m200112_072038_create_task_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropForeignKey('task_user_foreign_key', '{{%task}}');
         $this->dropTable('{{%task}}');
     }
 }
