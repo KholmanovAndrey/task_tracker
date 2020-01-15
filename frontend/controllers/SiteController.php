@@ -1,6 +1,7 @@
 <?php
 namespace frontend\controllers;
 
+use common\models\User;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\VerifyEmailForm;
 use Yii;
@@ -154,6 +155,13 @@ class SiteController extends Controller
     {
         $model = new SignupForm();
         if ($model->load(Yii::$app->request->post()) && $model->signup()) {
+            // присваеваем роль по умолчанию
+            $user = User::find()->where(['username' => $model->username])->one();
+            if (!empty($user)) {
+                $role = Yii::$app->authManager->getRole('user');
+                Yii::$app->authManager->assign($role, $user->id);
+            }
+
             Yii::$app->session->setFlash('success', 'Thank you for registration. Please check your inbox for verification email.');
             return $this->goHome();
         }
