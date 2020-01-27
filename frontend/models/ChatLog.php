@@ -37,7 +37,7 @@ class ChatLog extends \yii\db\ActiveRecord
     public function rules()
     {
         $rules = [
-            [['created_at', 'updated_at', 'type'], 'integer'],
+            [['project_id', 'task_id', 'created_at', 'updated_at', 'type'], 'integer'],
             [['username', 'type'], 'required'],
             [['message'], 'string'],
             [['username'], 'string', 'max' => 255],
@@ -71,7 +71,14 @@ class ChatLog extends \yii\db\ActiveRecord
     public static function create(array $data)
     {
         try {
-            $model = new self(['username' => $data['username'], 'message' => $data['message'], 'type' => $data['type']]);
+            $model = new self([
+                'username' => $data['username'],
+                'message' => $data['message'],
+                'type' => $data['type'],
+                'task_id' => $data['task_id'] ?? null,
+                'project_id' => $data['project_id'] ?? null
+            ]);
+
             if ($model->save()) {
                 return true;
             } else {

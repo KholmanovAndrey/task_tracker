@@ -3,32 +3,27 @@
 namespace common\models;
 
 use frontend\models\ChatLog;
-use frontend\widgets\chat\Chat;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 
 /**
- * This is the model class for table "task".
+ * This is the model class for table "project".
  *
  * @property int $id
  * @property int|null $creator_id
- * @property int|null $executor_id
  * @property string $name
  * @property string|null $content
+ * @property int|null $priority_id
  * @property int|null $status
  * @property int|null $started_at
  * @property int|null $finished_at
  * @property int|null $created_at
  * @property int|null $updated_at
- * @property int|null $priority_id
- * @property int|null $is_template
- * @property int|null $project_id
  *
- * @property Project $project
  * @property User $creator
- * @property User $executor
+ * @property Task[] $tasks
  */
-class Task extends \yii\db\ActiveRecord
+class Project extends \yii\db\ActiveRecord
 {
     const STATUS_NEW = 1;
     const STATUS_IN_PROGRESS = 2;
@@ -39,7 +34,7 @@ class Task extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'task';
+        return 'project';
     }
 
     public function behaviors()
@@ -53,13 +48,11 @@ class Task extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['creator_id', 'executor_id', 'status', 'started_at', 'finished_at', 'created_at', 'updated_at', 'priority_id', 'is_template', 'project_id'], 'integer'],
+            [['parent_id', 'creator_id', 'priority_id', 'status', 'started_at', 'finished_at', 'created_at', 'updated_at'], 'integer'],
             [['name'], 'required'],
             [['content'], 'string'],
             [['name'], 'string', 'max' => 255],
-            [['project_id'], 'exist', 'skipOnError' => false, 'targetClass' => Project::class, 'targetAttribute' => ['project_id' => 'id']],
-            [['creator_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['creator_id' => 'id']],
-            [['executor_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['executor_id' => 'id']],
+            [['creator_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['creator_id' => 'id']],
         ];
     }
 
@@ -70,27 +63,25 @@ class Task extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
+            'parent_id' => 'Parent',
             'creator_id' => 'Creator ID',
-            'executor_id' => 'Executor ID',
             'name' => 'Name',
             'content' => 'Content',
+            'priority_id' => 'Priority ID',
             'status' => 'Status',
             'started_at' => 'Started At',
             'finished_at' => 'Finished At',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
-            'priority_id' => 'Priority ID',
-            'is_template' => 'Is Template',
-            'project_id' => 'Project ID',
         ];
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getProject()
+    public function getParent()
     {
-        return $this->hasOne(Project::className(), ['id' => 'project_id']);
+        return $this->hasOne(Project::className(), ['id' => 'parent_id']);
     }
 
     /**
@@ -104,9 +95,9 @@ class Task extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getExecutor()
+    public function getTasks()
     {
-        return $this->hasOne(User::className(), ['id' => 'executor_id']);
+        return $this->hasMany(Task::className(), ['project_id' => 'id']);
     }
 
     public static function getStatusName()
@@ -123,18 +114,18 @@ class Task extends \yii\db\ActiveRecord
         if ($insert) {
             ChatLog::create([
                 'username' => Yii::$app->user->identity->username,
-                'message' => 'Новая задача ' . $this->name . ' #' . $this->id,
+                'message' => 'Новый проект ' . $this->name . ' #' . $this->id,
                 'type' => 2,
-                'task_id' => $this->id,
-                'project_id' => null
+                'task_id' => null,
+                'project_id' => $this->id
             ]);
         } else { // update
             ChatLog::create([
                 'username' => Yii::$app->user->identity->username,
-                'message' => 'Обновлена задача ' . $this->name . ' #' . $this->id,
+                'message' => 'Обновлен проект ' . $this->name . ' #' . $this->id,
                 'type' => 2,
-                'task_id' => $this->id,
-                'project_id' => null
+                'task_id' => null,
+                'project_id' => $this->id
             ]);
         }
     }

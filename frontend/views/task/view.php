@@ -39,7 +39,21 @@ $this->params['breadcrumbs'][] = $this->title;
             'finished_at',
             'created_at',
             'updated_at',
+            'priority_id',
+            'is_template',
+            [
+                'attribute' => 'project',
+                'value' => function ($model) {
+                    if ($model->project->name) {
+                        return Html::a($model->project->name, ['project/view', 'id' => $model->project_id]);
+                    }
+
+                    return 'Проекта нет';
+                },
+                'format' => 'raw'
+            ],
         ],
     ]) ?>
 
 </div>
+<?= \frontend\widgets\chat\Chat::widget(['task_id' => $model->id]) ?>
