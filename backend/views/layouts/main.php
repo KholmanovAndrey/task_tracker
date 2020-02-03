@@ -35,10 +35,17 @@ AppAsset::register($this);
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
-    $menuItems = [
-        ['label' => 'Home', 'url' => ['/site/index']],
-    ];
-    if (Yii::$app->user->isGuest) {
+    if (!Yii::$app->user->isGuest) {
+        $menuItems = [
+            ['label' => 'Home', 'url' => ['/site/index']],
+            ['label' => 'Projects', 'url' => ['/project/index']],
+            ['label' => 'Tasks', 'url' => ['/task/index']],
+        ];
+    }
+    if (Yii::$app->user->can('admin')) {
+        $menuItems[] = ['label' => 'Users', 'url' => ['/user/index']];
+    }
+    if (Yii::$app->user->isGuest || !Yii::$app->user->can('accessBackend')) {
         $menuItems[] = ['label' => 'Login', 'url' => ['/site/login']];
     } else {
         $menuItems[] = '<li>'
