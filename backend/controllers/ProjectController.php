@@ -1,11 +1,10 @@
 <?php
 
-namespace frontend\controllers;
+namespace backend\controllers;
 
-use common\models\Task;
 use Yii;
 use common\models\Project;
-use yii\data\ActiveDataProvider;
+use backend\models\ProjectSearch;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -28,7 +27,7 @@ class ProjectController extends Controller
                     [
                         'actions' => ['index', 'view', 'create', 'update', 'delete'],
                         'allow' => true,
-                        'roles' => ['@'],
+                        'roles' => ['accessBackend'],
                     ],
                 ],
             ],
@@ -47,11 +46,11 @@ class ProjectController extends Controller
      */
     public function actionIndex()
     {
-        $dataProvider = new ActiveDataProvider([
-            'query' => Project::find(),
-        ]);
+        $searchModel = new ProjectSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
+            'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
     }
@@ -64,15 +63,8 @@ class ProjectController extends Controller
      */
     public function actionView($id)
     {
-        $model = $this->findModel($id);
-
-        $dataProvider = new ActiveDataProvider([
-            'query' => Task::find()->where(['project_id' => $model->id]),
-        ]);
-
         return $this->render('view', [
-            'model' => $model,
-            'dataProvider' => $dataProvider
+            'model' => $this->findModel($id),
         ]);
     }
 

@@ -5,7 +5,6 @@ use yii\widgets\DetailView;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Task */
-/* @var $isSubscribed */
 
 $this->title = $model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Tasks', 'url' => ['index']];
@@ -25,11 +24,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 'method' => 'post',
             ],
         ]) ?>
-        <?php if (!$isSubscribed) { ?>
-            <?= Html::a('Subscribe', ['subscribe', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?php } else { ?>
-            <?= Html::a('Unsubscribe', ['unsubscribe', 'id' => $model->id], ['class' => 'btn btn-danger']) ?>
-        <?php } ?>
     </p>
 
     <?= DetailView::widget([
@@ -47,19 +41,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'updated_at',
             'priority_id',
             'is_template',
-            [
-                'attribute' => 'project',
-                'value' => function ($model) {
-                    if ($model->project->name) {
-                        return Html::a($model->project->name, ['project/view', 'id' => $model->project_id]);
-                    }
-
-                    return 'Проекта нет';
-                },
-                'format' => 'raw'
-            ],
+            'project_id',
         ],
     ]) ?>
 
 </div>
-<?= \frontend\widgets\chat\Chat::widget(['task_id' => $model->id]) ?>
